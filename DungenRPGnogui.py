@@ -1,6 +1,6 @@
 from os import mkdir, system, path
 from time import sleep
-from random import randint
+from random import randint,seed,random
 import sys
 syspath = sys.path #<-file_location
 del sys
@@ -48,19 +48,32 @@ class game:
             stats.playerlocation[1] += int(usr == 'd') - int(usr == 'a')
             return usr
         return None
+    def check_level():
+        for i in range(int(stats.player_experiance/5)):
+            if stats.player_experiance >= 5 + 5 * stats.player_level:
+                stats.player_level += 1
+                stats.player_experiance -= 5 + 5 * stats.player_level
+                stats.player_health += randint(1,5)
+                stats.player_dmg += randint(1,5)
+        
     def battle(enemy_health, enemy_attack):
-        stats.player_health = stats.player_health
+        stats.player_health = stats.player_max_health
         while 1:
-            if enemy_health < 0: 
+            seed(random())
+            if enemy_health <= 0: 
                 stats.player_gold += 10 + 10 * stats.player_level
+                stats.player_experiance += 5
                 return 1
             if stats.player_health < 0:return 0
+            print(f'player health: {stats.player_health} enemy health: {enemy_health}')
             usr = input('<in-combat> ').lower()
-            if usr == 'ack': enemy_health -= stats.player_dmg
-            if usr == 'def': pass
+            if usr == 'ack' and randint(1,4) == 4: enemy_health -= stats.player_dmg
+            if usr in ['ack'] and randint(1,4): stats.player_health -= enemy_attack
             if usr == 'run' and randint(1, 4) == 4: return 1
     def update(target,changes):
-        if len(target) == 1: return True
+        if len(target) == 1: 
+            del target[0]
+            return True
         if changes in ['w','a','s','d'] and randint(0, 8) == 8:game.battle(5 + 2 * stats.player_level, randint(1, 2) + randint(1,3) * stats.player_level)
             
         if not changes == None:
@@ -68,10 +81,12 @@ class game:
                 if changes in ['w','a','s','d']:target[stats.playerlocation[0]+int(changes == 'w')-int(changes=='s')][stats.playerlocation[1]+int(changes=='a')-int(changes=='d')] = '_'
                 if changes in ['w','a','s','d']:target[stats.playerlocation[0]][stats.playerlocation[1]] = 'P'
             except IndexError:
-                if changes in ['w','a','s','d']:
-                    if changes in ['a','d']: stats.playerlocation[1] = 0
-                    if changes in ['w','s']: stats.playerlocation[0] = 0
-                    if changes in ['w','a','s','d']:target[stats.playerlocation[0]][stats.playerlocation[1]] = 'P'
+                try:
+                    if changes in ['w','a','s','d']:
+                        if changes in ['a','d']: stats.playerlocation[1] = 0
+                        if changes in ['w','s']: stats.playerlocation[0] = 0
+                        if changes in ['w','a','s','d']:target[stats.playerlocation[0]][stats.playerlocation[1]] = 'P'
+                except IndexError: pass
         try:
             for i in range(len(target)):
                 if target[i] == list('_'*len(target[i])): del target[i]
@@ -85,12 +100,13 @@ class game:
                 stats.inflation = randint(-1, 3) + randint(-1, 3) + randint(-1, 3) + randint(-1, 3)
                 clear()
                 print('Dungon cleared!')
-                break
+                return 1
             clear()
     def shop():
         hp,dmg = int(1.5 * stats.player_max_health),5 * stats.player_dmg
         if stats.inflation > 0: hp,dmg = stats.player_max_health * stats.inflation,stats.player_dmg * stats.inflation
         while 1:
+            clear()
             print(f"gold:{stats.player_gold}\nupgrades: \n1: more hp: {hp}g\n2: more dmg:{dmg}g")
             usr = input('<shop>')
             if usr == '1' and stats.player_gold >= hp : 
@@ -101,13 +117,16 @@ class game:
                 stats.player_gold -= dmg
             if usr.lower() == 'quit': break
     def streets():
-        stats.inflation = randint(-1, 3) + randint(-1, 3) + randint(-1, 3) + randint(-1, 3)
         while 1:
             print('level:',stats.player_level,'health:',stats.player_max_health,'damage:',stats.player_dmg)
             usr = input('<streets>')
             clear()
             for i in range(2):
-                if usr.lower() == ['dungon','shop'][i]:[game.dungon,game.shop][i]()
+                if usr.lower() == ['dungon','shop'][i]:
+                    if [game.dungon,game.shop][i]():
+                        stats.inflation = randint(-1, 3) + randint(-1, 3) + randint(-1, 3) + randint(-1, 3)
+                        game.check_level()
+                        
 class menu:
     def default_start():
         stats.player_max_health = 10
