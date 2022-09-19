@@ -9,18 +9,13 @@ def clear():
         if platform == 'linux':   system('clear')
         elif platform == 'win32': system('cls')
 class file_manager:
-    folder_name = file_name = None
-    def check_folder(name):
-        if path.isdir(name): return 1
-        file_manager.folder_name = name
-        return 0
-    def check_file(name):
-        if path.isfile(name):return 1
-        file_manager.file_name = name
-        return 0
-    def __new__(cls,number):
-        if not file_manager.check_folder('saves')  and number >= 3: mkdir(syspath[0] + '/' + file_manager.folder_name)
-        if not file_manager.check_file('saves/save.txt')  and number>= 3: pass
+    file_locator = path.isfile('save')
+    if not (file_locator:=path.isfile('save/fl.lc')):
+        with open('save/fl.lc', 'w') as fl:fl.close()
+    def load():
+        with open('save/fl.lc', 'w') as fl:fl.close()
+    def save():
+        with open('save/fl.lc', 'w') as fl:fl.close()
 class intro:
     print('|‾‾‾‾‾‾‾‾‾‾‾|\n| Welcome   |\n|   to      |\n| DungenRPG |\n|  devbui   |\n|___________|\n')
     for i in range(12):
