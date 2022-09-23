@@ -5,30 +5,55 @@ import sys
 syspath = sys.path #<-file_location
 del sys
 from sys import platform
+class stats:playerlocation = player_kills = inflation = player_health = player_max_health = player_experiance = player_level = player_gold = player_dmg = 0
 def clear():
         if platform == 'linux':   system('clear')
         elif platform == 'win32': system('cls')
 class file_manager:
-    folder_name = file_name = None
-    def check_folder(name):
-        if path.isdir(name): return 1
-        file_manager.folder_name = name
-        return 0
-    def check_file(name):
-        if path.isfile(name):return 1
-        file_manager.file_name = name
-        return 0
-    def __new__(cls,number):
-        if not file_manager.check_folder('saves')  and number >= 3: mkdir(syspath[0] + '/' + file_manager.folder_name)
-        if not file_manager.check_file('saves/save.txt')  and number>= 3: pass
+    files = []
+    info = None
+    if not path.isdir('save'): mkdir('save')
+    if not path.isfile('save/fl.lc'): 
+        with open('save/fl.lc', 'w') as f:f.close()
+        
+    def load():
+        with open('save/fl.lc', 'r') as fl:file_manager.files += fl.read().replace('\n',' ').split()
+        if len(file_manager.files) >= 1:
+            print(str(file_manager.files).replace('.sav', ''))
+            usr = input('<choose>')
+            if usr in str(file_manager.files).replace('.sav', ''):
+                for i in range(len(file_manager.files)):
+                    if (usr := usr.lower()) == file_manager.files[i].replace('.sav',''):
+                        with open(f'save/{file_manager.files[i]}', 'r') as sv:
+                            info = sv.read()[::-1].split()
+        if not info == None:
+            for i in range(len(info)):info[i] = chr(int(info[i],2))
+            info = ''.join(info)
+            for i in range(4):info = info.replace(['mh','ep','pl','pg'][i], ' ')
+            info = info.split()
+            for i in range(len(info)):info[i] = int(info[i])
+            stats.player_max_health= info[0]
+            stats.player_experiance = info[1]
+            stats.player_level = info[2]
+            stats.player_gold = info[3]
+            stats.player_dmg = info[4]
+        files = []
+    def save():
+        filename = input('What name would you like to save? ')
+        if not filename in ['',' ']:
+            with open(f'save/{filename}.sav', 'w') as save:
+                stuff_into_save =  str(stats.player_max_health) + 'mh' +  str(stats.player_experiance) + 'ep' + str(stats.player_level) + 'pl' + str(stats.player_gold)+ 'pg' + str(stats.player_dmg)
+                save.write(' '.join(format(x,'b') for x in bytearray(stuff_into_save, 'utf-8'))[::-1])
+            with open('save/fl.lc', 'w') as fl:
+                file_manager.files.append(f'{filename}.sav')
+                for i in range(len(file_manager.files)):fl.write(file_manager.files[i] +'\n')
+
 class intro:
-    print('|‾‾‾‾‾‾‾‾‾‾‾|\n| Welcome   |\n|   to      |\n| DungenRPG |\n|  devbui   |\n|___________|\n')
+    print('|‾‾‾‾‾‾‾‾‾‾‾|\n| Welcome   |\n|   to      |\n| DungenRPG |\n|  ver1.0   |\n|___________|\n')
     for i in range(12):
         print('[' + '-'*i + ']', end='\r')
-        file_manager(i)
         sleep(0.045)
     print('       Type (start,load or quit)', end='\r')
-class stats:playerlocation = player_kills = inflation = player_health = player_max_health = player_experiance = player_level = player_gold = player_dmg = 0
 class game:
     def generate(layout = [],vec2=(randint(4,10),randint(4,10))):
         for i in range(vec2[0]+1):
@@ -75,7 +100,6 @@ class game:
             del target[0]
             return True
         if changes in ['w','a','s','d'] and randint(0, 8) == 8:game.battle(5 + 2 * stats.player_level, randint(1, 2) + randint(1,3) * stats.player_level)
-            
         if not changes == None:
             try:
                 if changes in ['w','a','s','d']:target[stats.playerlocation[0]+int(changes == 'w')-int(changes=='s')][stats.playerlocation[1]+int(changes=='a')-int(changes=='d')] = '_'
@@ -121,9 +145,9 @@ class game:
             print('level:',stats.player_level,'health:',stats.player_max_health,'damage:',stats.player_dmg)
             usr = input('<streets>')
             clear()
-            for i in range(2):
-                if usr.lower() == ['dungon','shop'][i]:
-                    if [game.dungon,game.shop][i]():
+            for i in range(3):
+                if usr.lower() == ['dungon','shop','save'][i]:
+                    if [game.dungon,game.shop,file_manager.save][i]():
                         stats.inflation = randint(-1, 3) + randint(-1, 3) + randint(-1, 3) + randint(-1, 3)
                         game.check_level()
                         
@@ -132,8 +156,8 @@ class menu:
         stats.player_max_health = 10
         stats.player_dmg = 5
         game.streets()
-    def load(): pass
     def quit():return 1
+    def load():file_manager.load(),game.streets()
     def switch_logic(usr):
         for i in range(4):
             if usr.lower() == ['load','clear','quit','start'][i]:[menu.load,clear,menu.quit,menu.default_start][i]()
