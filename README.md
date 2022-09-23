@@ -15,5 +15,5 @@ Install my-project with npm
 ```bash
     pyinstaller {script_name}
 ```
-## compiled executeables 
+## Compiled executeables 
 https://github.com/BrentG45/RPGame/releases/tag/cmdgame
