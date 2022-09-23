@@ -11,31 +11,45 @@ def clear():
         elif platform == 'win32': system('cls')
 class file_manager:
     files = []
+    info = None
     if not path.isdir('save'): mkdir('save')
     if not path.isfile('save/fl.lc'): 
         with open('save/fl.lc', 'w') as f:f.close()
         
-    with open('save/fl.lc','r') as fl:
-        for line in fl:files += line
-        fl.close()
-    def load():pass
+    def load():
+        with open('save/fl.lc', 'r') as fl:file_manager.files += fl.read().replace('\n',' ').split()
+        if len(file_manager.files) >= 1:
+            print(str(file_manager.files).replace('.sav', ''))
+            usr = input('<choose>')
+            if usr in str(file_manager.files).replace('.sav', ''):
+                for i in range(len(file_manager.files)):
+                    if (usr := usr.lower()) == file_manager.files[i].replace('.sav',''):
+                        with open(f'save/{file_manager.files[i]}', 'r') as sv:
+                            info = sv.read()[::-1].split()
+        if not info == None:
+            for i in range(len(info)):info[i] = chr(int(info[i],2))
+            info = ''.join(info)
+            for i in range(4):info = info.replace(['mh','ep','pl','pg'][i], ' ')
+            info = info.split()
+            for i in range(len(info)):info[i] = int(info[i])
+            stats.player_max_health= info[0]
+            stats.player_experiance = info[1]
+            stats.player_level = info[2]
+            stats.player_gold = info[3]
+            stats.player_dmg = info[4]
+        files = []
     def save():
         filename = input('What name would you like to save? ')
         if not filename in ['',' ']:
             with open(f'save/{filename}.sav', 'w') as save:
-                stuff_into_save = str(stats.player_health) + str(stats.player_max_health) + str(stats.player_experiance) + str(stats.player_level) + str(stats.player_gold) + str(stats.player_dmg)
+                stuff_into_save =  str(stats.player_max_health) + 'mh' +  str(stats.player_experiance) + 'ep' + str(stats.player_level) + 'pl' + str(stats.player_gold)+ 'pg' + str(stats.player_dmg)
                 save.write(' '.join(format(x,'b') for x in bytearray(stuff_into_save, 'utf-8'))[::-1])
-                file_manager.files.append(f'{filename}.sav') 
-                print(file_manager.files)
             with open('save/fl.lc', 'w') as fl:
-                for i in range(len(filename)):
-                    for j in range(len(filename[i])):
-                        fl.write(' '.join(format(x,'b') for x in bytearray(f'{filename[i][j]}.sav','utf-8')) + ' ')
-                fl.write('\n')
-                fl.close()
-                
+                file_manager.files.append(f'{filename}.sav')
+                for i in range(len(file_manager.files)):fl.write(file_manager.files[i] +'\n')
+
 class intro:
-    print('|‾‾‾‾‾‾‾‾‾‾‾|\n| Welcome   |\n|   to      |\n| DungenRPG |\n|  devbui   |\n|___________|\n')
+    print('|‾‾‾‾‾‾‾‾‾‾‾|\n| Welcome   |\n|   to      |\n| DungenRPG |\n|  ver1.0   |\n|___________|\n')
     for i in range(12):
         print('[' + '-'*i + ']', end='\r')
         sleep(0.045)
@@ -142,8 +156,8 @@ class menu:
         stats.player_max_health = 10
         stats.player_dmg = 5
         game.streets()
-    def load(): pass
     def quit():return 1
+    def load():file_manager.load(),game.streets()
     def switch_logic(usr):
         for i in range(4):
             if usr.lower() == ['load','clear','quit','start'][i]:[menu.load,clear,menu.quit,menu.default_start][i]()
